@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRIQUE — Maison de Brique, Édition No. 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --kiln:#1a1512;
+    --kiln-2:#241d18;
+    --kiln-3:#2e2620;
+    --brick:#a63a2c;
+    --brick-light:#c4553f;
+    --brick-deep:#7a281d;
+    --ash:#8b7e74;
+    --bone:#ede6da;
+    --gold:#c9a227;
+    --gold-soft:#e0c46a;
+    --display: 'Fraunces', serif;
+    --body: 'Space Grotesk', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--kiln);
+    color:var(--bone);
+    font-family:var(--body);
+    overflow-x:hidden;
+    position:relative;
+  }
+  body::before{
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.015) 0, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.02) 0, transparent 40%);
+    pointer-events:none;
+    z-index:1;
+  }
+  ::selection{background:var(--brick); color:var(--bone);}
+
+  h1,h2,h3{font-family:var(--display); font-weight:600; letter-spacing:-0.01em; line-height:1.05;}
+  .eyebrow{
+    font-family:var(--body); font-size:0.72rem; letter-spacing:0.28em; text-transform:uppercase;
+    color:var(--gold-soft); font-weight:600; margin-bottom:1.1rem; display:flex; align-items:center; gap:0.7rem;
+  }
+  .eyebrow::before{content:''; width:26px; height:1px; background:var(--gold-soft); display:inline-block;}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:1.4rem 4vw;
+    background:linear-gradient(to bottom, rgba(26,21,18,0.9), transparent);
+    opacity:0; transform:translateY(-12px);
+    transition:opacity .6s ease, transform .6s ease, background .3s ease;
+    pointer-events:none;
+  }
+  nav.show{opacity:1; transform:translateY(0); pointer-events:auto;}
+  nav.solid{background:rgba(26,21,18,0.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(201,162,39,0.15);}
+  .wordmark{font-family:var(--display); font-weight:600; font-size:1.25rem; letter-spacing:0.03em;}
+  .wordmark span{color:var(--brick-light); font-style:italic;}
+  .nav-cta{
+    font-family:var(--body); font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--kiln); background:var(--gold-soft); padding:0.65rem 1.4rem; border-radius:2px;
+    border:none; cursor:pointer; font-weight:600; transition:transform .25s ease, background .25s ease;
+  }
+  .nav-cta:hover{background:var(--bone); transform:translateY(-1px);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh; position:relative; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+    padding:7rem 6vw 4rem;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 40%, rgba(166,58,44,0.25), transparent 70%),
+      radial-gradient(ellipse 90% 60% at 50% 100%, rgba(201,162,39,0.06), transparent 60%),
+      var(--kiln);
+  }
+  .hero .eyebrow{justify-content:center;}
+  .hero h1{
+    font-size:clamp(2.6rem, 6.5vw, 5.4rem);
+    max-width:16ch; margin-bottom:1.3rem;
+  }
+  .hero h1 em{color:var(--brick-light); font-style:italic;}
+  .hero p.sub{
+    max-width:44ch; color:var(--ash); font-size:1.05rem; line-height:1.6; margin-bottom:2.6rem;
+  }
+  .hero-ctas{display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin-bottom:3.5rem;}
+  .btn-primary, .btn-ghost{
+    font-family:var(--body); font-size:0.8rem; letter-spacing:0.14em; text-transform:uppercase;
+    padding:0.95rem 2.1rem; border-radius:2px; cursor:pointer; font-weight:600;
+    transition:transform .25s ease, box-shadow .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .btn-primary{background:var(--brick); color:var(--bone); border:1px solid var(--brick);}
+  .btn-primary:hover{background:var(--brick-light); transform:translateY(-2px); box-shadow:0 10px 24px rgba(166,58,44,0.35);}
+  .btn-ghost{background:transparent; color:var(--bone); border:1px solid rgba(237,230,218,0.3);}
+  .btn-ghost:hover{border-color:var(--gold-soft); color:var(--gold-soft);}
+
+  /* 3D brick */
+  .stage{
+    width:min(90vw, 460px); height:min(60vw, 320px);
+    perspective:1400px; position:relative; margin:0 auto;
+  }
+  .stage-glow{
+    position:absolute; inset:-30%; z-index:0;
+    background:radial-gradient(circle, rgba(166,58,44,0.35), transparent 65%);
+    filter:blur(20px); pointer-events:none;
+  }
+  .brick3d{
+    width:100%; height:100%; position:relative; transform-style:preserve-3d;
+    cursor:grab; touch-action:none;
+  }
+  .brick3d:active{cursor:grabbing;}
+  .face{
+    position:absolute; top:50%; left:50%;
+    background-image:
+      radial-gradient(circle at 18% 22%, rgba(0,0,0,0.22) 0, transparent 3%),
+      radial-gradient(circle at 62% 58%, rgba(0,0,0,0.18) 0, transparent 2.5%),
+      radial-gradient(circle at 40% 80%, rgba(0,0,0,0.15) 0, transparent 2%),
+      radial-gradient(circle at 80% 15%, rgba(255,255,255,0.08) 0, transparent 2%),
+      url('https://www.transparenttextures.com/patterns/concrete-wall.png'),
+      linear-gradient(155deg, var(--brick-light), var(--brick) 45%, var(--brick-deep) 100%);
+    background-blend-mode:overlay, overlay, overlay, overlay, soft-light, normal;
+    background-size:cover;
+    border:1px solid rgba(0,0,0,0.3);
+    box-shadow:inset 0 0 24px rgba(0,0,0,0.35);
+  }
+  .face.top{background-image:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0, transparent 40%),
+      url('https://www.transparenttextures.com/patterns/concrete-wall.png'),
+      linear-gradient(155deg, #d4694f, var(--brick-light) 60%);
+    background-blend-mode:overlay, soft-light, normal; background-size:cover;
+  }
+  .face.bottom{filter:brightness(0.5);}
+  .face.left, .face.right{filter:brightness(0.68);}
+  .drag-hint{
+    margin-top:1.6rem; font-size:0.72rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--ash);
+    display:flex; align-items:center; gap:0.5rem; justify-content:center;
+  }
+  .drag-hint svg{width:16px; height:16px; opacity:0.6;}
+  .scroll-cue{
+    position:absolute; bottom:2.2rem; left:50%; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:0.5rem;
+    color:var(--ash); font-size:0.68rem; letter-spacing:0.2em; text-transform:uppercase;
+  }
+  .scroll-cue .line{width:1px; height:32px; background:linear-gradient(var(--gold-soft), transparent); animation:pulse 2s ease infinite;}
+  @keyframes pulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+
+  /* ---------- SECTIONS SHARED ---------- */
+  section{position:relative; z-index:2; padding:8rem 6vw;}
+  .wrap{max-width:1100px; margin:0 auto;}
+  .reveal{opacity:0; transform:translateY(36px); transition:opacity .9s cubic-bezier(.16,.8,.24,1), transform .9s cubic-bezier(.16,.8,.24,1);}
+  .reveal.visible{opacity:1; transform:translateY(0);}
+  .reveal.d1{transition-delay:.1s;} .reveal.d2{transition-delay:.22s;} .reveal.d3{transition-delay:.34s;}
+
+  /* ---------- PROVENANCE ---------- */
+  .provenance{
+    display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:center;
+    background:var(--kiln-2); border-top:1px solid rgba(201,162,39,0.1); border-bottom:1px solid rgba(201,162,39,0.1);
+  }
+  .provenance h2{font-size:clamp(1.8rem,3.4vw,2.7rem); margin-bottom:1.3rem;}
+  .provenance p{color:var(--ash); line-height:1.75; font-size:1rem; margin-bottom:1rem;}
+  .provenance .signature{font-family:var(--display); font-style:italic; color:var(--gold-soft); margin-top:1.5rem; font-size:1rem;}
+  .clay-visual{
+    aspect-ratio:1/1; border-radius:4px; position:relative; overflow:hidden;
+    background:
+      radial-gradient(circle at 30% 30%, var(--brick-light), var(--brick-deep) 70%);
+    box-shadow:inset 0 0 80px rgba(0,0,0,0.5);
+  }
+  .clay-visual::before{
+    content:''; position:absolute; inset:0;
+    background-image: repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 18px, rgba(0,0,0,0.05) 19px);
+  }
+  .clay-ring{
+    position:absolute; border:1px solid rgba(237,230,218,0.15); border-radius:50%;
+    top:50%; left:50%; transform:translate(-50%,-50%);
+    animation:spin-slow 40s linear infinite;
+  }
+  .clay-ring:nth-child(1){width:60%; height:60%;}
+  .clay-ring:nth-child(2){width:80%; height:80%; animation-duration:60s; animation-direction:reverse;}
+  .clay-ring:nth-child(3){width:100%; height:100%; animation-duration:80s;}
+  @keyframes spin-slow{to{transform:translate(-50%,-50%) rotate(360deg);}}
+
+  /* ---------- CRAFT / KILN ---------- */
+  .craft{text-align:center;}
+  .craft h2{font-size:clamp(1.8rem,3.6vw,2.9rem); max-width:16ch; margin:0 auto 1rem;}
+  .craft p.lead{color:var(--ash); max-width:52ch; margin:0 auto 3.5rem; line-height:1.75;}
+  .kiln-gauge{
+    max-width:640px; margin:0 auto; padding:2.6rem; border:1px solid rgba(201,162,39,0.2); border-radius:6px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .gauge-track{
+    height:10px; border-radius:6px; background:var(--kiln-3); overflow:hidden; position:relative; margin-bottom:1.2rem;
+    border:1px solid rgba(0,0,0,0.3);
+  }
+  .gauge-fill{
+    height:100%; width:0%; border-radius:6px;
+    background:linear-gradient(90deg, var(--gold), var(--brick-light), var(--brick));
+    box-shadow:0 0 18px rgba(196,85,63,0.6);
+    transition:width 2.4s cubic-bezier(.2,.7,.2,1);
+  }
+  .gauge-labels{display:flex; justify-content:space-between; font-size:0.75rem; color:var(--ash); letter-spacing:0.06em;}
+  .gauge-readout{font-family:var(--display); font-size:2.6rem; margin-top:1.6rem; color:var(--gold-soft);}
+  .gauge-readout small{font-size:1rem; color:var(--ash); font-family:var(--body); display:block; margin-top:0.3rem; letter-spacing:0.1em;}
+
+  /* ---------- SPECS ---------- */
+  .specs{background:var(--kiln-2); border-top:1px solid rgba(201,162,39,0.1); border-bottom:1px solid rgba(201,162,39,0.1);}
+  .specs-head{text-align:center; margin-bottom:4rem;}
+  .specs-head h2{font-size:clamp(1.8rem,3.6vw,2.9rem);}
+  .specs-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:1px; background:rgba(201,162,39,0.15); border:1px solid rgba(201,162,39,0.15);}
+  .spec-cell{background:var(--kiln-2); padding:2.4rem 1.8rem;}
+  .spec-cell .label{font-size:0.7rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--ash); margin-bottom:0.9rem;}
+  .spec-cell .value{font-family:var(--display); font-size:1.9rem; color:var(--bone);}
+  .spec-cell .value span.unit{font-size:1rem; color:var(--gold-soft); margin-left:0.3rem;}
+
+  /* ---------- GAME ---------- */
+  .game-section{text-align:center;}
+  .game-section h2{font-size:clamp(1.8rem,3.6vw,2.9rem); margin-bottom:1rem;}
+  .game-section p.lead{color:var(--ash); max-width:50ch; margin:0 auto 3rem; line-height:1.75;}
+  .game-shell{
+    max-width:460px; margin:0 auto; border:1px solid rgba(201,162,39,0.25); border-radius:8px;
+    background:linear-gradient(180deg, var(--kiln-3), var(--kiln-2));
+    padding:1.4rem; position:relative;
+  }
+  .game-hud{display:flex; justify-content:space-between; align-items:center; padding:0 0.4rem 1rem; font-size:0.8rem; letter-spacing:0.08em; color:var(--ash);}
+  .game-hud .score{font-family:var(--display); font-size:1.6rem; color:var(--gold-soft);}
+  #gameCanvas{width:100%; display:block; border-radius:4px; background:linear-gradient(180deg, #241d18, #14100d); touch-action:none; cursor:pointer;}
+  .game-overlay{
+    position:absolute; inset:1.4rem; border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(20,16,13,0.88); backdrop-filter:blur(3px); text-align:center; padding:2rem; gap:1rem;
+  }
+  .game-overlay h3{font-family:var(--display); font-size:1.5rem;}
+  .game-overlay p{color:var(--ash); font-size:0.9rem; max-width:32ch; line-height:1.5;}
+  .hidden-overlay{display:none;}
+
+  /* ---------- PURCHASE ---------- */
+  .purchase{
+    background:radial-gradient(ellipse 70% 60% at 50% 20%, rgba(166,58,44,0.2), transparent 65%), var(--kiln);
+    text-align:center; border-top:1px solid rgba(201,162,39,0.12);
+  }
+  .purchase h2{font-size:clamp(2rem,4.4vw,3.4rem); max-width:18ch; margin:0 auto 1rem;}
+  .purchase p.lead{color:var(--ash); max-width:46ch; margin:0 auto 3rem; line-height:1.75;}
+  .price-card{
+    max-width:420px; margin:0 auto; border:1px solid rgba(201,162,39,0.25); border-radius:8px; padding:3rem 2.2rem;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  }
+  .currency-switch{display:flex; gap:0.5rem; justify-content:center; margin-bottom:1.8rem; flex-wrap:wrap;}
+  .currency-switch button{
+    font-family:var(--body); font-size:0.72rem; letter-spacing:0.06em; font-weight:600;
+    padding:0.45rem 0.9rem; border-radius:20px; border:1px solid rgba(237,230,218,0.25);
+    background:transparent; color:var(--ash); cursor:pointer; transition:all .2s ease;
+  }
+  .currency-switch button:hover{border-color:var(--gold-soft); color:var(--bone);}
+  .currency-switch button.active{background:var(--gold-soft); color:var(--kiln); border-color:var(--gold-soft);}
+  .ships-line{font-size:0.78rem; color:var(--ash); margin-bottom:2rem; letter-spacing:0.02em;}
+  .price{font-family:var(--display); font-size:3.4rem; color:var(--gold-soft); margin-bottom:0.4rem;}
+  .price-sub{font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ash); margin-bottom:2rem;}
+  .scarcity{font-size:0.8rem; color:var(--brick-light); margin-bottom:0.6rem; letter-spacing:0.04em;}
+  .reserve-result{
+    margin-top:1.6rem; padding:1.2rem; border:1px dashed rgba(201,162,39,0.4); border-radius:4px;
+    font-family:var(--display); font-size:1.1rem; color:var(--bone); display:none;
+  }
+  .reserve-result.show{display:block;}
+  .reserve-result small{display:block; font-family:var(--body); color:var(--ash); font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; margin-top:0.5rem;}
+
+  footer{
+    padding:3.5rem 6vw; text-align:center; border-top:1px solid rgba(201,162,39,0.1);
+    color:var(--ash); font-size:0.78rem; letter-spacing:0.03em;
+  }
+  footer .wordmark{display:block; margin-bottom:0.8rem; color:var(--bone);}
+
+  @media (max-width:820px){
+    .provenance{grid-template-columns:1fr; gap:3rem;}
+    .clay-visual{max-width:340px; margin:0 auto;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+
+  :focus-visible{outline:2px solid var(--gold-soft); outline-offset:3px;}
+</style>
+</head>
+<body>
+
+<nav id="mainNav">
+  <div class="wordmark">BRIQUE<span>.</span></div>
+  <button class="nav-cta" onclick="document.getElementById('purchase').scrollIntoView({behavior:'smooth'})">Reserve</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="eyebrow">Maison de Brique — Atelier No. 1</div>
+  <h1>One brick.<br><em>Zero</em> compromises.</h1>
+  <p class="sub">Hand-fired, individually numbered, and engineered to outlast every trend, every building, and quite possibly your patience for ordinary materials.</p>
+  <div class="hero-ctas">
+    <button class="btn-primary" onclick="document.getElementById('provenance').scrollIntoView({behavior:'smooth'})">Discover the Brick</button>
+    <button class="btn-ghost" onclick="document.getElementById('purchase').scrollIntoView({behavior:'smooth'})">Reserve Yours</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="stage-glow"></div>
+    <div class="brick3d" id="brick3d">
+      <div class="face front"></div>
+      <div class="face back"></div>
+      <div class="face left"></div>
+      <div class="face right"></div>
+      <div class="face top"></div>
+      <div class="face bottom"></div>
+    </div>
+  </div>
+  <div class="drag-hint">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3v18M15 3v18M3 9l3 3-3 3M21 9l-3 3 3 3"/></svg>
+    Drag to rotate
+  </div>
+
+  <div class="scroll-cue"><span>Scroll</span><span class="line"></span></div>
+</section>
+
+<!-- PROVENANCE -->
+<section class="provenance" id="provenance">
+  <div class="reveal">
+    <div class="eyebrow">Provenance</div>
+    <h2>Quarried from a clay seam we refuse to name.</h2>
+    <p>Somewhere along an undisclosed riverbank, a vein of clay has been resting for eleven thousand years, waiting for absolutely nothing in particular — until now.</p>
+    <p>We extract it by hand, in small batches, on days our master mason deems the light "correct." No GPS coordinates exist. No satellite has seen it. Ask us anyway; we still won't tell you.</p>
+    <div class="signature">— Atelier Notes, Vol. I</div>
+  </div>
+  <div class="clay-visual reveal d2">
+    <div class="clay-ring"></div>
+    <div class="clay-ring"></div>
+    <div class="clay-ring"></div>
+  </div>
+</section>
+
+<!-- CRAFT / KILN -->
+<section class="craft" id="craft">
+  <div class="reveal">
+    <div class="eyebrow" style="justify-content:center;">The Firing</div>
+    <h2>Thirty-six hours at 1,200°C. Zero shortcuts.</h2>
+    <p class="lead">Every Brique is fired slowly, by hand-fed kiln, until the clay forgets it was ever soft. We could do it faster. We choose not to.</p>
+  </div>
+  <div class="kiln-gauge reveal d2">
+    <div class="gauge-track"><div class="gauge-fill" id="gaugeFill"></div></div>
+    <div class="gauge-labels"><span>0°C</span><span>600°C</span><span>1,200°C</span></div>
+    <div class="gauge-readout" id="gaugeReadout">0<small>Kiln temperature, live from the atelier*</small></div>
+  </div>
+</section>
+
+<!-- SPECS -->
+<section class="specs" id="specs">
+  <div class="wrap">
+    <div class="specs-head reveal">
+      <div class="eyebrow" style="justify-content:center;">The Measure of a Brick</div>
+      <h2>Specifications, not superlatives.</h2>
+    </div>
+    <div class="specs-grid reveal d1">
+      <div class="spec-cell"><div class="label">Weight</div><div class="value" data-count="2.3" data-decimals="1">0<span class="unit">kg</span></div></div>
+      <div class="spec-cell"><div class="label">Dimensions</div><div class="value">215 × 102.5 × 65<span class="unit">mm</span></div></div>
+      <div class="spec-cell"><div class="label">Compressive Strength</div><div class="value" data-count="35">0<span class="unit">N/mm²</span></div></div>
+      <div class="spec-cell"><div class="label">Finish</div><div class="value" style="font-size:1.4rem;">Hand-set patina</div></div>
+      <div class="spec-cell"><div class="label">Firing Time</div><div class="value" data-count="36">0<span class="unit">hrs</span></div></div>
+      <div class="spec-cell"><div class="label">Edition</div><div class="value" style="font-size:1.4rem;">Numbered, 1 of 1</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MINI GAME -->
+<section class="game-section" id="game">
+  <div class="reveal">
+    <div class="eyebrow" style="justify-content:center;">Prove Its Worth</div>
+    <h2>The Foundation Test</h2>
+    <p class="lead">Every Brique must earn its stack. Tap to drop with precision — one wobble, and gravity remembers everything.</p>
+  </div>
+  <div class="game-shell reveal d2">
+    <div class="game-hud"><span>Stack Height</span><span class="score" id="scoreDisplay">0</span></div>
+    <canvas id="gameCanvas" width="400" height="440"></canvas>
+    <div class="game-overlay" id="gameOverlay">
+      <h3>Ready to build?</h3>
+      <p>Tap or click anywhere on the stack to drop each brick. Align it perfectly to keep the tower true.</p>
+      <button class="btn-primary" id="startBtn">Begin the Test</button>
+    </div>
+  </div>
+</section>
+
+<!-- PURCHASE -->
+<section class="purchase" id="purchase">
+  <div class="reveal">
+    <div class="eyebrow" style="justify-content:center;">Acquisition</div>
+    <h2>Yours. Numbered. Irreplaceable.</h2>
+    <p class="lead">Each Brique ships in a lined cedar case with a certificate of provenance and a magnifying glass, in case you'd like to inspect your investment closely.</p>
+    <p class="lead" style="margin-top:-2rem; font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold-soft);">Reserved by collectors in Dhaka, New York, London, Dubai &amp; Singapore</p>
+  </div>
+  <div class="price-card reveal d1">
+    <div class="currency-switch" id="currencySwitch">
+      <button data-currency="USD" class="active">$ USD</button>
+      <button data-currency="BDT">৳ BDT</button>
+      <button data-currency="EUR">€ EUR</button>
+      <button data-currency="GBP">£ GBP</button>
+    </div>
+    <div class="price" id="priceDisplay">$0</div>
+    <div class="price-sub">One-time acquisition, tax not included</div>
+    <div class="scarcity">Only 214 of 500 editions remain</div>
+    <div class="ships-line">Ships worldwide — Dhaka, New York, London, Toronto &amp; beyond</div>
+    <button class="btn-primary" id="reserveBtn" style="width:100%;">Reserve This Brick</button>
+    <div class="reserve-result" id="reserveResult"></div>
+  </div>
+</section>
+
+<footer>
+  <span class="wordmark">BRIQUE<span style="color:var(--brick-light);">.</span></span>
+  Maison de Brique, Est. Now. Not dishwasher safe. Not that it needs to be.
+</footer>
+
+<script>
+(function(){
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV ---------- */
+  var nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 60){ nav.classList.add('show','solid'); }
+    else { nav.classList.remove('show','solid'); }
+  });
+
+  /* ---------- 3D BRICK ---------- */
+  var stage = document.getElementById('stage');
+  var brick = document.getElementById('brick3d');
+  var L = 280, D = 130, H = 85; // matches CSS proportions roughly
+  function sizeFaces(){
+    var rect = stage.getBoundingClientRect();
+    var scale = Math.min(rect.width / 460, 1);
+    L = 280*scale; D = 130*scale; H = 85*scale;
+    var faces = brick.querySelectorAll('.face');
+    faces.forEach(function(f){
+      if(f.classList.contains('front') || f.classList.contains('back')){
+        f.style.width = L+'px'; f.style.height = H+'px';
+      } else if(f.classList.contains('left') || f.classList.contains('right')){
+        f.style.width = D+'px'; f.style.height = H+'px';
+      } else {
+        f.style.width = L+'px'; f.style.height = D+'px';
+      }
+      f.style.marginLeft = '-'+(parseFloat(f.style.width)/2)+'px';
+      f.style.marginTop = '-'+(parseFloat(f.style.height)/2)+'px';
+    });
+    brick.querySelector('.front').style.transform = 'translateZ('+(D/2)+'px)';
+    brick.querySelector('.back').style.transform = 'translateZ(-'+(D/2)+'px) rotateY(180deg)';
+    brick.querySelector('.left').style.transform = 'rotateY(-90deg) translateZ('+(L/2)+'px)';
+    brick.querySelector('.right').style.transform = 'rotateY(90deg) translateZ('+(L/2)+'px)';
+    brick.querySelector('.top').style.transform = 'rotateX(90deg) translateZ('+(H/2)+'px)';
+    brick.querySelector('.bottom').style.transform = 'rotateX(-90deg) translateZ('+(H/2)+'px)';
+  }
+  sizeFaces();
+  window.addEventListener('resize', sizeFaces);
+
+  var baseRotX = -18, baseRotY = 28;  // resting tilt, set by page-wide mouse parallax
+  var dragRotX = 0, dragRotY = 0;     // extra offset added while actively dragging the brick
+  var curRotX = baseRotX, curRotY = baseRotY; // smoothed values actually applied to the DOM
+  var dragging = false, lastX=0, lastY=0;
+
+  function applyRotation(){
+    brick.style.transform = 'rotateX('+curRotX+'deg) rotateY('+curRotY+'deg)';
+  }
+  applyRotation();
+
+  // Ambient parallax: the brick leans gently toward the cursor anywhere on the page
+  if(!reduceMotion){
+    document.addEventListener('mousemove', function(e){
+      if(dragging) return;
+      var relX = (e.clientX / window.innerWidth) - 0.5;
+      var relY = (e.clientY / window.innerHeight) - 0.5;
+      baseRotY = 28 + relX * 34;
+      baseRotX = -18 - relY * 22;
+    });
+  }
+
+  // Smooth toward the target rotation every frame instead of snapping to it
+  function rotationLoop(){
+    var targetX = baseRotX + dragRotX;
+    var targetY = baseRotY + dragRotY;
+    var ease = dragging ? 0.5 : 0.08;
+    curRotX += (targetX - curRotX) * ease;
+    curRotY += (targetY - curRotY) * ease;
+    applyRotation();
+    requestAnimationFrame(rotationLoop);
+  }
+  requestAnimationFrame(rotationLoop);
+
+  function pointerDown(x,y){ dragging = true; lastX = x; lastY = y; }
+  function pointerMove(x,y){
+    if(!dragging) return;
+    var dx = x - lastX, dy = y - lastY;
+    dragRotY += dx*0.4;
+    dragRotX -= dy*0.4;
+    dragRotX = Math.max(-40, Math.min(40, dragRotX));
+    lastX = x; lastY = y;
+  }
+  function pointerUp(){
+    dragging = false;
+    baseRotY += dragRotY; baseRotX += dragRotX;
+    dragRotY = 0; dragRotX = 0;
+  }
+
+  stage.addEventListener('mousedown', function(e){ pointerDown(e.clientX, e.clientY); e.stopPropagation(); });
+  window.addEventListener('mousemove', function(e){ pointerMove(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', pointerUp);
+  stage.addEventListener('touchstart', function(e){ var t=e.touches[0]; pointerDown(t.clientX, t.clientY); }, {passive:true});
+  window.addEventListener('touchmove', function(e){ var t=e.touches[0]; pointerMove(t.clientX, t.clientY); }, {passive:true});
+  window.addEventListener('touchend', pointerUp);
+
+  /* ---------- SCROLL REVEAL ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){ entry.target.classList.add('visible'); }
+    });
+  }, {threshold:0.18});
+  revealEls.forEach(function(el){ io.observe(el); });
+
+  /* ---------- KILN GAUGE ---------- */
+  var gaugeFill = document.getElementById('gaugeFill');
+  var gaugeReadout = document.getElementById('gaugeReadout');
+  var kilnTriggered = false;
+  var kilnObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting && !kilnTriggered){
+        kilnTriggered = true;
+        gaugeFill.style.width = '100%';
+        var start = null, duration = 2400, target = 1200;
+        function step(ts){
+          if(!start) start = ts;
+          var p = Math.min((ts-start)/duration, 1);
+          var eased = 1 - Math.pow(1-p, 3);
+          gaugeReadout.firstChild.textContent = Math.round(eased*target) + '°C';
+          if(p<1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+    });
+  }, {threshold:0.4});
+  kilnObserver.observe(document.getElementById('craft'));
+
+  /* ---------- SPEC COUNTERS ---------- */
+  var counters = document.querySelectorAll('[data-count]');
+  var countObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var el = entry.target;
+        if(el.dataset.done) return;
+        el.dataset.done = '1';
+        var target = parseFloat(el.dataset.count);
+        var decimals = parseInt(el.dataset.decimals || '0');
+        var unitSpan = el.querySelector('.unit');
+        var start = null, duration = 1400;
+        function step(ts){
+          if(!start) start = ts;
+          var p = Math.min((ts-start)/duration, 1);
+          var eased = 1 - Math.pow(1-p, 3);
+          var val = (target*eased).toFixed(decimals);
+          el.firstChild.textContent = val;
+          if(p<1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+        countObserver.unobserve(el);
+      }
+    });
+  }, {threshold:0.5});
+  counters.forEach(function(el){ countObserver.observe(el); });
+
+  /* ---------- PRICE COUNTER (multi-currency) ---------- */
+  var priceDisplay = document.getElementById('priceDisplay');
+  var currencySwitch = document.getElementById('currencySwitch');
+  var priceTriggered = false;
+  var basePriceUSD = 12750;
+  var currencyMeta = {
+    USD: {symbol:'$', rate:1,     locale:'en-US'},
+    BDT: {symbol:'৳', rate:122,   locale:'en-US'},
+    EUR: {symbol:'€', rate:0.92,  locale:'en-US'},
+    GBP: {symbol:'£', rate:0.78,  locale:'en-US'}
+  };
+  var activeCurrency = 'USD';
+  var displayedValue = 0; // last rendered numeric value, used as the animation start point
+
+  function renderPrice(fromValue, toValue, symbol){
+    var start = null, duration = 900;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts-start)/duration, 1);
+      var eased = 1 - Math.pow(1-p, 3);
+      var val = Math.round(fromValue + (toValue-fromValue)*eased);
+      priceDisplay.textContent = symbol + val.toLocaleString('en-US');
+      displayedValue = val;
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function setCurrency(code){
+    activeCurrency = code;
+    var meta = currencyMeta[code];
+    var target = Math.round(basePriceUSD * meta.rate);
+    renderPrice(displayedValue, target, meta.symbol);
+    currencySwitch.querySelectorAll('button').forEach(function(btn){
+      btn.classList.toggle('active', btn.dataset.currency === code);
+    });
+  }
+
+  currencySwitch.querySelectorAll('button').forEach(function(btn){
+    btn.addEventListener('click', function(){ setCurrency(btn.dataset.currency); });
+  });
+
+  var priceObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting && !priceTriggered){
+        priceTriggered = true;
+        setCurrency(activeCurrency);
+      }
+    });
+  }, {threshold:0.5});
+  priceObserver.observe(document.getElementById('purchase'));
+
+  /* ---------- RESERVE BUTTON ---------- */
+  var reserveBtn = document.getElementById('reserveBtn');
+  var reserveResult = document.getElementById('reserveResult');
+  reserveBtn.addEventListener('click', function(){
+    var serial = 'BQ-' + Math.floor(1000 + Math.random()*8999) + '-' + String.fromCharCode(65 + Math.floor(Math.random()*26));
+    reserveResult.innerHTML = 'Edition № ' + serial + '<small>Your brick has been set aside. It will not be laid in any other wall.</small>';
+    reserveResult.classList.add('show');
+    reserveBtn.textContent = 'Reserved ✓';
+    reserveBtn.disabled = true;
+    reserveBtn.style.opacity = '0.7';
+    reserveBtn.style.cursor = 'default';
+  });
+
+  /* ---------- MINI GAME: THE FOUNDATION TEST ---------- */
+  var canvas = document.getElementById('gameCanvas');
+  var ctx = canvas.getContext('2d');
+  var overlay = document.getElementById('gameOverlay');
+  var startBtn = document.getElementById('startBtn');
+  var scoreDisplay = document.getElementById('scoreDisplay');
+
+  var W = canvas.width, Hc = canvas.height;
+  var blocks, current, camY, speed, dir, running, gameScore, debris;
+  var blockH = 34;
+  var palette = ['#a63a2c','#c4553f','#7a281d','#c9a227','#8b7e74'];
+
+  function resetGame(){
+    blocks = [{x: W/2 - 90, w:180, y: Hc - blockH - 20, color:palette[0]}];
+    current = {x: 10, w:180, y: Hc - blockH*2 - 20, color:palette[1]};
+    dir = 1; speed = 2.6; camY = 0; running = true; gameScore = 0; debris = [];
+    scoreDisplay.textContent = '0';
+  }
+
+  function newBlock(){
+    var top = blocks[blocks.length-1];
+    var w = top.w;
+    current = {x: - w, w:w, y: top.y - blockH, color: palette[blocks.length % palette.length]};
+    dir = 1;
+    speed = Math.min(2.6 + blocks.length*0.14, 7);
+  }
+
+  function drop(){
+    if(!running) return;
+    var top = blocks[blocks.length-1];
+    var overlapStart = Math.max(current.x, top.x);
+    var overlapEnd = Math.min(current.x+current.w, top.x+top.w);
+    var overlapW = overlapEnd - overlapStart;
+
+    if(overlapW <= 4){
+      endGame(false);
+      return;
+    }
+
+    // debris for the cut-off piece
+    if(current.x < overlapStart){
+      debris.push({x:current.x, y:current.y, w:overlapStart-current.x, color:current.color, vy:1, vx:-2, rot:0});
+    }
+    if(current.x+current.w > overlapEnd){
+      debris.push({x:overlapEnd, y:current.y, w:(current.x+current.w)-overlapEnd, color:current.color, vy:1, vx:2, rot:0});
+    }
+
+    var placed = {x:overlapStart, w:overlapW, y:current.y, color:current.color};
+    blocks.push(placed);
+    gameScore++;
+    scoreDisplay.textContent = gameScore;
+
+    if(placed.y < Hc*0.45){
+      camY += blockH;
+    }
+    newBlock();
+  }
+
+  function endGame(){
+    running = false;
+    overlay.classList.remove('hidden-overlay');
+    overlay.style.display = 'flex';
+    overlay.querySelector('h3').textContent = 'Structural failure.';
+    overlay.querySelector('p').textContent = 'Final stack height: ' + gameScore + '. Even luxury has its limits.';
+    startBtn.textContent = 'Try Again';
+  }
+
+  function loop(){
+    if(running){
+      current.x += speed*dir;
+      if(current.x + current.w > W){ current.x = W - current.w; dir = -1; }
+      if(current.x < 0){ current.x = 0; dir = 1; }
+      debris.forEach(function(d){ d.y += d.vy; d.vy += 0.4; d.x += d.vx; });
+      debris = debris.filter(function(d){ return d.y < Hc + 60; });
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,Hc);
+    var grad = ctx.createLinearGradient(0,0,0,Hc);
+    grad.addColorStop(0,'#241d18'); grad.addColorStop(1,'#14100d');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,W,Hc);
+
+    ctx.save();
+    ctx.translate(0, camY);
+
+    blocks.forEach(function(b){
+      ctx.fillStyle = b.color;
+      ctx.fillRect(b.x, b.y, b.w, blockH-2);
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fillRect(b.x, b.y, b.w, 4);
+    });
+
+    debris.forEach(function(d){
+      ctx.fillStyle = d.color;
+      ctx.fillRect(d.x, d.y, d.w, blockH-2);
+    });
+
+    if(running){
+      ctx.fillStyle = current.color;
+      ctx.fillRect(current.x, current.y, current.w, blockH-2);
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      ctx.fillRect(current.x, current.y, current.w, 4);
+    }
+
+    ctx.restore();
+  }
+
+  canvas.addEventListener('click', drop);
+  canvas.addEventListener('touchstart', function(e){ e.preventDefault(); drop(); }, {passive:false});
+
+  startBtn.addEventListener('click', function(){
+    resetGame();
+    overlay.style.display = 'none';
+  });
+
+  resetGame();
+  draw();
+  requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
